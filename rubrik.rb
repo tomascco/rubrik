@@ -17,3 +17,4 @@ end
 require_relative "rubrik/document"
 require_relative "rubrik/add_signature_objects"
 require_relative "rubrik/rebuild_document"
+require_relative "rubrik/sign"
