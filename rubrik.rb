@@ -6,7 +6,7 @@ Bundler.setup(:default)
 
 require "sorbet-runtime"
 require "pdf-reader"
-require "debug"
+require "irb"
 
 module Rubrik
   CONTENTS_PLACEHOLDER = Object.new.freeze
