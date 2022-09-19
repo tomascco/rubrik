@@ -34,7 +34,7 @@ module Rubrik
       signature_dictionary = {
         Type: :Sig,
         Filter: :"Adobe.PPKLite",
-        SubFilter: :"adbe.pkcs7.sha1",
+        SubFilter: :"adbe.pkcs7.detached",
         Contents: CONTENTS_PLACEHOLDER,
         ByteRange: BYTE_RANGE_PLACEHOLDER,
       }
