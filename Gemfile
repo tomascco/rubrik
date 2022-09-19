@@ -7,3 +7,5 @@ gem "sorbet-runtime"
 gem "tapioca", require: false, group: :development
 gem "debug"
 gem "pdf-reader"
+gem "irb"
+gem "rdoc"
