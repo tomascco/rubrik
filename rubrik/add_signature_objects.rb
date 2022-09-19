@@ -43,7 +43,15 @@ module Rubrik
           document.xref[root_id][:obj] = modified_root
         end
       else
-        document.build_form(form_fields: form_field.to_a)
+        modified_root = document.root.dup
+
+        form_ref = document.build_form(form_fields: form_field.to_a)
+        modified_root[:AcroForm] = form_ref
+
+        root_id = document.obj_finder.trailer[:Root].id
+
+        document.xref[root_id][:modified] = true
+        document.xref[root_id][:obj] = modified_root
       end
 
       document
