@@ -8,9 +8,9 @@ module Rubrik
     extend T::Sig
     extend self
 
-    sig {params(document: Rubrik::Document, output: T.any(String, Pathname)).returns(File)}
-    def call(document, output:)
-      rebuilt_document = File.open(output, "w")
+    sig {params(document: Rubrik::Document).returns(StringIO)}
+    def call(document)
+      rebuilt_document = StringIO.new
       new_xref = []
 
       rebuilt_document << "%PDF-#{document.obj_finder.pdf_version}\n"
@@ -45,9 +45,8 @@ module Rubrik
       rebuilt_document << "#{xref_pos.to_s}\n"
       rebuilt_document << "%%EOF\n"
 
+      rebuilt_document.rewind
       rebuilt_document
-    ensure
-      T.must(rebuilt_document).close
     end
 
     sig {params(obj: T.untyped).returns(String)}
@@ -76,7 +75,7 @@ module Rubrik
       when Integer
         obj.to_s
       else
-        raise "Não sei serializar #{obj.class.name}"
+        raise NotImplementedError.new("Don't know how to serialize #{obj}")
       end
     end
   end
