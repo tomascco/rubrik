@@ -12,6 +12,8 @@ module Rubrik
   CONTENTS_PLACEHOLDER = Object.new.freeze
   BYTE_RANGE_PLACEHOLDER = Object.new.freeze
   SIGNATURE_SIZE = 8_192
+
+  class Error < StandardError; end
 end
 
 require_relative "rubrik/document"
