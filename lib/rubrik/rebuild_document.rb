@@ -34,7 +34,7 @@ module Rubrik
       xref_pos = rebuilt_document.pos
 
       rebuilt_document << "xref\n"
-      rebuilt_document << "0 #{new_xref.size}"
+      rebuilt_document << "0 #{new_xref.size}\n"
       rebuilt_document << "0000000000 65535 f\n"
       new_xref.each do |entry|
         rebuilt_document << "#{format("%010d", entry[:offset])} 00000 n\n"
