@@ -8,3 +8,4 @@ gem "minitest", "~> 5.0"
 gem "rake", "~> 13.0"
 gem "sorbet"
 gem "tapioca", require: false
+gem "ruby-lsp", require: false
