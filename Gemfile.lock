@@ -12,7 +12,6 @@ GEM
     afm (0.2.2)
     erubi (1.12.0)
     hashery (2.1.2)
-    language_server-protocol (3.17.0.3)
     minitest (5.20.0)
     netrc (0.11.0)
     parallel (1.23.0)
@@ -27,10 +26,6 @@ GEM
     rbi (0.1.1)
       sorbet-runtime (>= 0.5.9204)
       yarp (>= 0.11.0)
-    ruby-lsp (0.11.2)
-      language_server-protocol (~> 3.17.0)
-      sorbet-runtime (>= 0.5.5685)
-      yarp (>= 0.12, < 0.13)
     ruby-rc4 (0.1.5)
     sorbet (0.5.11074)
       sorbet-static (= 0.5.11074)
@@ -70,9 +65,9 @@ DEPENDENCIES
   minitest (~> 5.0)
   rake (~> 13.0)
   rubrik!
-  ruby-lsp
   sorbet
+  sorbet-runtime
   tapioca
 
 BUNDLED WITH
-   2.3.13
+   2.4.20
