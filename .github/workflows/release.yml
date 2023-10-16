@@ -16,7 +16,6 @@ jobs:
       - name: Create release
         uses: actions/github-script@v6
         with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
             await github.rest.repos.createRelease({
               owner: context.repo.owner,
