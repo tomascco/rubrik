@@ -10,15 +10,15 @@ This gem is under development and may be subjected to breaking changes.
 
 ### PDF Features
 - [x] Modify PDFs with incremental updates (doesn't modify the documents, only append signature appearence)
-- []  Signature appearence (stamp)
-- []  External (offline) signatures
+- [ ] Signature appearence (stamp)
+- [ ] External (offline) signatures
 
 ### Signature Profiles
 - [x] CMS (PKCS#7)
-- []  PAdES B-B (conforms with PAdES-E-BES)
-- []  PAdES B-T (conforms with PAdES-E-BES)
-- []  PAdES AD-RB
-- []  PAdES AD-RT
+- [ ] PAdES B-B (conforms with PAdES-E-BES)
+- [ ] PAdES B-T (conforms with PAdES-E-BES)
+- [ ] PAdES AD-RB
+- [ ] PAdES AD-RT
 
 ## Installation
 
