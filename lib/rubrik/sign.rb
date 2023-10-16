@@ -6,18 +6,23 @@ module Rubrik
     extend T::Sig
 
     sig {params(
-           input: T.any(IO, Tempfile, StringIO, String),
-           private_key: T.any(String, Pathname, File, StringIO, Tempfile, OpenSSL::PKey::RSA),
-           public_key: T.any(String, Pathname, File, StringIO, Tempfile, OpenSSL::X509::Certificate),
-           password: String,
+           input: T.any(File, Tempfile, StringIO),
+           output: T.any(File, Tempfile, StringIO),
+           private_key: OpenSSL::PKey::RSA,
+           public_key: OpenSSL::X509::Certificate,
            certificate_chain: T::Array[OpenSSL::X509::Certificate])
-         .returns(T.any(File, StringIO, Tempfile))}
-    def self.call(input, private_key:, public_key:, password: "", certificate_chain: [])
-      document = Rubrik::AddSignatureObjects.call(input)
-      ready_to_sign_pdf_io = Rubrik::RebuildDocument.call(document)
+         .void}
+    def self.call(input, output, private_key:, public_key:, certificate_chain: [])
+      document = Rubrik::Document.new(input)
 
-      Rubrik::FillSignature.call(ready_to_sign_pdf_io,
-                                 private_key:, public_key:, password:, certificate_chain:)
+      document.add_signature_field
+
+      Document::Increment.call(document, io: output)
+
+      signature_value = T.must(document.modified_objects.find { _1.dig(:value, :Type) == :Sig })
+
+      signature_value_ref = T.let(signature_value[:id], PDF::Reader::Reference)
+      FillSignature.call(output, signature_value_ref:, private_key:, public_key:, certificate_chain:)
     end
   end
 end

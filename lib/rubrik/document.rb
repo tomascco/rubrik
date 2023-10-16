@@ -1,79 +1,127 @@
 # typed: true
 # frozen_string_literal: true
 
+require "securerandom"
+
 module Rubrik
   class Document
     extend T::Sig
 
-    Xref = T.type_alias {T::Hash[Integer, T::Hash[Symbol, T.untyped]]}
+    CONTENTS_PLACEHOLDER = Object.new.freeze
+    BYTE_RANGE_PLACEHOLDER = Object.new.freeze
+    SIGNATURE_SIZE = 8_192
 
-    attr_reader :xref, :root_ref, :root, :io, :obj_finder
+    sig {returns(T.any(File, Tempfile, StringIO))}
+    attr_reader :io
 
-    sig {params(obj_finder: PDF::Reader::ObjectHash).void}
-    def initialize(obj_finder)
-      @obj_finder = obj_finder
-      @xref = @obj_finder.send(:xref).instance_variable_get(:@xref).dup.map do |id, versions|
-        last_version = versions.keys.max
-        offset = versions[last_version]
+    sig {returns(PDF::Reader::ObjectHash)}
+    attr_reader :objects
 
-        [id, {offset:, modified: false, obj: nil}]
-      end.to_h
-
-      @root_ref = T.let(@obj_finder.trailer[:Root], PDF::Reader::Reference)
-      @root = T.let(@obj_finder.object(@root_ref), T::Hash[Symbol, T.untyped])
-      @io = @obj_finder.instance_variable_get(:@io)
-    end
-
-    sig {returns(T::Boolean)}
-    def has_acroform?
-      root.key?(:AcroForm)
-    end
+    sig {returns(T::Array[{id: PDF::Reader::Reference, value: T.untyped}])}
+    attr_reader :modified_objects
 
     sig {returns(PDF::Reader::Reference)}
-    def build_signature_dictionary
-      signature_dictionary = {
-        Type: :Sig,
-        Filter: :"Adobe.PPKLite",
-        SubFilter: :"adbe.pkcs7.detached",
-        Contents: CONTENTS_PLACEHOLDER,
-        ByteRange: BYTE_RANGE_PLACEHOLDER,
+    attr_reader :interactive_form_id
+
+    sig {returns(Integer)}
+    attr_reader :last_object_id
+
+    sig {params(input: T.any(File, Tempfile, StringIO)).void}
+    def initialize(input)
+      self.io = input
+      self.objects = PDF::Reader::ObjectHash.new(input)
+      self.last_object_id = objects.size
+      self.modified_objects = []
+
+      fetch_or_create_interactive_form!
+    end
+
+    sig {void}
+    def add_signature_field
+      # create signature value dictionary
+      signature_value_id = assign_new_object_id!
+      modified_objects << {
+        id: signature_value_id,
+        value: {
+          Type: :Sig,
+          Filter: :"Adobe.PPKLite",
+          SubFilter: :"adbe.pkcs7.detached",
+          Contents: CONTENTS_PLACEHOLDER,
+          ByteRange: BYTE_RANGE_PLACEHOLDER
+        }
       }
 
-      signature_dictionary_id = next_id
-      xref[signature_dictionary_id] = {modified: true, obj: signature_dictionary}
+      first_page_reference = T.must(objects.page_references[0])
 
-      PDF::Reader::Reference.new(signature_dictionary_id, 0)
-    end
+      # create signature field
+      signature_field_id = assign_new_object_id!
+      modified_objects << {
+        id: signature_field_id,
+        value: {
+          T: "Signature-#{SecureRandom.hex(2)}",
+          FT: :Sig,
+          V: signature_value_id,
+          Type: :Annot,
+          Subtype: :Widget,
+          Rect: [20, 20, 120, 120],
+          F: 4,
+          P: first_page_reference
+        }
+      }
 
-    sig {params(signature_dictionary: PDF::Reader::Reference).returns(PDF::Reader::Reference)}
-    def build_form_field(signature_dictionary:)
-      form_field = {FT: :Sig, V: signature_dictionary}
+      modified_page = objects.fetch(first_page_reference).dup
+      (modified_page[:Annots] ||= []) << signature_field_id
 
-      form_field_id = next_id
-      xref[form_field_id] = {modified: true, obj: form_field}
+      modified_objects << {id: first_page_reference, value: modified_page}
 
-      PDF::Reader::Reference.new(form_field_id, 0)
-    end
-
-    sig {params(form_fields: T::Array[PDF::Reader::Reference]).returns(PDF::Reader::Reference)}
-    def build_form(form_fields:)
-      form = {Fields: form_fields, SigFlags: 3}
-
-      form_id = next_id
-      xref[form_id] = {modified: true, obj: form}
-
-      PDF::Reader::Reference.new(form_id, 0)
-    end
-
-    def object(...)
-      obj_finder.object(...)
+      (interactive_form[:Fields] ||= []) << signature_field_id
     end
 
     private
 
-    sig {returns(Integer)}
-    def next_id
-      T.must(xref.keys.max) + 1
+    sig {returns(T::Hash[Symbol, T.untyped])}
+    def interactive_form
+      T.must(modified_objects.first).fetch(:value)
     end
+
+    sig {void}
+    def fetch_or_create_interactive_form!
+      root_ref = objects.trailer[:Root]
+      root = T.let(objects.fetch(root_ref), Hash)
+
+      if root.key?(:AcroForm)
+        form_id = root[:AcroForm]
+
+        modified_objects << {id: form_id, value: objects.fetch(form_id).dup}
+      else
+        interactive_form_id = assign_new_object_id!
+        modified_objects << {id: interactive_form_id, value: {Fields: []}}
+
+        # we also need to create a new version of the document catalog to include the new form ref
+        updated_root = root.dup
+        updated_root[:AcroForm] = interactive_form_id
+
+        modified_objects << {id: root_ref, value: updated_root}
+      end
+
+      interactive_form[:SigFlags] = 3 # dont modify, append only
+    end
+
+    sig {returns(PDF::Reader::Reference)}
+    def assign_new_object_id!
+      PDF::Reader::Reference.new(self.last_object_id += 1, 0)
+    end
+
+    sig {params(io: T.any(File, Tempfile, StringIO)).returns(T.any(File, Tempfile, StringIO))}
+    attr_writer :io
+
+    sig {params(objects: PDF::Reader::ObjectHash).returns(PDF::Reader::ObjectHash)}
+    attr_writer :objects
+
+    sig {params(modified_objects: T::Array[{id: PDF::Reader::Reference, value: T.untyped}]).returns(T::Array[{id: PDF::Reader::Reference, value: T.untyped}])}
+    attr_writer :modified_objects
+
+    sig {params(last_object_id: Integer).returns(Integer)}
+    attr_writer :last_object_id
   end
 end

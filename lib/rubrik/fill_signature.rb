@@ -10,108 +10,63 @@ module Rubrik
     include Kernel
 
     sig {params(
-          input: T.any(String, Pathname, IO, StringIO, Tempfile),
-          private_key: T.any(String, Pathname, File, StringIO, Tempfile, OpenSSL::PKey::RSA),
-          public_key: T.any(String, Pathname, File, StringIO, Tempfile, OpenSSL::X509::Certificate),
-          password: String,
+          io: T.any(File, StringIO, Tempfile),
+          signature_value_ref: PDF::Reader::Reference,
+          private_key: OpenSSL::PKey::RSA,
+          public_key: OpenSSL::X509::Certificate,
           certificate_chain: T::Array[OpenSSL::X509::Certificate])
         .returns(T.any(File, StringIO, Tempfile))}
-    def call(input, private_key:, public_key:, password: "", certificate_chain: [])
-      io = convert_input_to_io(input)
+
+    FIRST_OFFSET = 0
+
+    def call(io, signature_value_ref:, private_key:, public_key:, certificate_chain: [])
       io.rewind
 
-      io.gets("/Type /Sig")
-      io.gets("/Contents ")
+      signature_value_offset = PDF::Reader::XRef.new(io)[signature_value_ref]
 
-      first_length_in_bytes = io.pos
-      second_byte_range_offset = first_length_in_bytes + SIGNATURE_SIZE
-      second_length_in_bytes = io.size - second_byte_range_offset
+      io.pos = signature_value_offset
+      io.gets("/Contents")
+      io.gets("<")
 
-      byte_range_array = [0, first_length_in_bytes, second_byte_range_offset, second_length_in_bytes]
+      first_length = io.pos - 1
+      # we need to double the SIGNATURE_SIZE because the hex encoding double the data size
+      # we also need to sum +2 to account for "<" and ">" of the hex string
+      second_offset = first_length + Document::SIGNATURE_SIZE + 2
+      second_length = io.size - second_offset
 
-      io.pos = second_byte_range_offset
-      byte_array_size = T.must(io.gets("]")).size
-      actual_byte_range = " /ByteRange [#{byte_range_array.join(" ")}]".ljust(byte_array_size, " ")
+      byte_range_array = [FIRST_OFFSET, first_length, second_offset, second_length]
 
-      io.seek(-byte_array_size, IO::SEEK_CUR)
+      io.pos = signature_value_offset
+
+      io.gets("/ByteRange")
+      byte_range_start = io.pos - "/ByteRange".size
+
+      io.gets("]")
+      byte_range_end = io.pos
+
+      byte_range_size = byte_range_end - byte_range_start + 1
+      actual_byte_range = " /ByteRange [#{byte_range_array.join(" ")}]".ljust(byte_range_size, " ")
+
+      io.seek(-byte_range_size, IO::SEEK_CUR)
       io.write(actual_byte_range)
 
-      io.pos = 0
-      data_to_sign = T.must(io.read(first_length_in_bytes))
+      io.pos = FIRST_OFFSET
+      data_to_sign = T.must(io.read(first_length))
 
-      io.pos = second_byte_range_offset
-      data_to_sign += T.must(io.read(second_length_in_bytes))
+      io.pos = second_offset
+      data_to_sign += T.must(io.read(second_length))
 
-      pkey = convert_input_to_private_key(private_key, password)
-      pubkey = convert_input_to_public_key(public_key)
-
-      signature = OpenSSL::PKCS7.sign(pubkey, pkey, data_to_sign, certificate_chain,
+      signature = OpenSSL::PKCS7.sign(public_key, private_key, data_to_sign, certificate_chain,
                                       OpenSSL::PKCS7::DETACHED | OpenSSL::PKCS7::BINARY).to_der
       hex_signature = T.let(signature, String).unpack1("H*")
 
-      padded_contents_field = "<#{hex_signature.ljust(SIGNATURE_SIZE - 2, "0")}>"
+      padded_contents_field = "<#{hex_signature.ljust(Document::SIGNATURE_SIZE, "0")}>"
 
-      io.pos = first_length_in_bytes
+      io.pos = first_length
       io.write(padded_contents_field)
 
       io.rewind
       io
-    end
-
-    private
-
-    sig {params(input: T.any(String, Pathname, IO, StringIO, Tempfile, File))
-         .returns(T.any(File, StringIO, Tempfile))}
-    def convert_input_to_io(input)
-      case input
-      when String, Pathname
-        string_io = StringIO.new
-        file = File.new(input, mode: "rb")
-
-        IO.copy_stream(file, T.unsafe(string_io))
-
-        string_io
-      when File, StringIO, Tempfile
-        input
-      else
-        raise NotImplementedError.new("Can't convert #{input} to IO")
-      end
-    end
-
-    sig {params(input: T.any(String, Pathname, File, StringIO, Tempfile, OpenSSL::PKey::RSA), password: String)
-         .returns(OpenSSL::PKey::RSA)}
-    def convert_input_to_private_key(input, password)
-      case input
-      when String
-        File.open(input, mode: "rb") do |cert|
-          OpenSSL::PKey::RSA.new(cert, password)
-        end
-      when IO, StringIO, Tempfile
-        input.rewind
-        OpenSSL::PKey::RSA.new(input, password)
-      when OpenSSL::PKey::RSA
-        input
-      else
-        raise NotImplementedError.new("Can't convert #{input} to IO")
-      end
-    end
-
-    sig {params(input: T.any(String, Pathname, File, StringIO, Tempfile, OpenSSL::X509::Certificate))
-      .returns(OpenSSL::X509::Certificate)}
-    def convert_input_to_public_key(input)
-      case input
-      when String
-        File.open(input, mode: "rb") do |cert|
-          OpenSSL::X509::Certificate.new(cert)
-        end
-      when IO, StringIO, Tempfile
-        input.rewind
-        OpenSSL::X509::Certificate.new(input)
-      when OpenSSL::X509::Certificate
-        input
-      else
-        raise NotImplementedError.new("Can't convert #{input} to IO")
-      end
     end
   end
 end
