@@ -37,7 +37,7 @@ With the gem loaded, run the following to sign an document:
 ```ruby
 # The input and output can be of types `File`, `Tempfile` or `StringIO`.
 input_pdf = File.open("example.pdf", "rb")
-output_pdf = File.open("signed_example.pdf", "wb")
+output_pdf = File.open("signed_example.pdf", "wb+") # needs read permission
 
 # Load Certificate(s)
 certificate = File.open("example_cert.pem", "rb")
