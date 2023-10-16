@@ -3,8 +3,18 @@
 This project follows [semver 2.0.0](http://semver.org/spec/v2.0.0.html).
 
 - [Unreleased](#unreleased)
+- [0.1.1 (2023-10-15)](#011-2023-10-15)
+  - [Fixed](#fixed)
+- [0.1.0 (2023-10-15)](#010-2023-10-15)
+  - [Added](#added)
 
 ## Unreleased
+
+0.1.1 (2023-10-15)
+------------------
+### Fixed
+
+* Bug on require.
 
 0.1.0 (2023-10-15)
 ------------------
