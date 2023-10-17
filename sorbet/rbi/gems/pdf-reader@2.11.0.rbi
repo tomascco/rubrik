@@ -2075,7 +2075,7 @@ class PDF::Reader::ObjectHash
   # Useful for apps that want to extract data from specific pages.
   #
   # source://pdf-reader//lib/pdf/reader/object_hash.rb#468
-  sig { returns(T::Array[T.any(PDF::Reader::Reference, T::Hash[Symbol, T.untyped])]) }
+  sig { returns(T::Array[PDF::Reader::Reference]) }
   def page_references; end
 
   # Returns the value of attribute pdf_version.
@@ -2252,7 +2252,7 @@ end
 class PDF::Reader::OverlappingRunsFilter
   class << self
     # source://pdf-reader//lib/pdf/reader/overlapping_runs_filter.rb#41
-    sig { params(sweep_line_status: T::Array[PDF::Reader::TextRun], event_point: EventPoint).returns(T::Boolean) }
+    sig { params(sweep_line_status: T::Array[PDF::Reader::TextRun], event_point: PDF::Reader::EventPoint).returns(T::Boolean) }
     def detect_intersection(sweep_line_status, event_point); end
 
     # source://pdf-reader//lib/pdf/reader/overlapping_runs_filter.rb#14
