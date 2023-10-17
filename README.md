@@ -4,13 +4,25 @@ Rubrik is a complete and simple digital signature library that implements the PA
 Signatures) in pure Ruby. It conforms with PKCS#7 and **will be** compatible with Brazil's AD-RB, AD-RT and EU's B-B
 and B-T profiles.
 
+- [Rubrik](#rubrik)
+  - [Implementation Status](#implementation-status)
+    - [PDF Features](#pdf-features)
+    - [Signature Profiles](#signature-profiles)
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [Development](#development)
+  - [References:](#references)
+  - [Contributing](#contributing)
+  - [License](#license)
+  - [Code of Conduct](#code-of-conduct)
+
 ## Implementation Status
 
 This gem is under development and may be subjected to breaking changes.
 
 ### PDF Features
-- [x] Modify PDFs with incremental updates (doesn't modify the documents, only append signature appearence)
-- [ ] Signature appearence (stamp)
+- [x] Modify PDFs with incremental updates (doesn't modify the documents, only append signature appearance)
+- [ ] Signature appearance (stamp)
 - [ ] External (offline) signatures
 
 ### Signature Profiles
@@ -62,6 +74,16 @@ output as input for the next signature. A better API for this use case may be de
 After checking out the repo, run `bundle install` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+
+## References:
+1. PDF References:
+    - [ISO 3200-2](https://pdfa.org/sponsored-standards/)
+
+2. Brazil's technical references:
+    - [DOC-ICP-15.03](https://www.gov.br/iti/pt-br/assuntos/legislacao/instrucoes-normativas/IN032021_DOC_15.03_assinada.pdf)
+3. EU's technical references:
+    - [ETSI 319 122-1](https://www.etsi.org/deliver/etsi_en/319100_319199/31912201/01.02.01_60/en_31912201v010201p.pdf)
+    - [ETSI 319 122-2](https://www.etsi.org/deliver/etsi_en/319100_319199/31912201/01.02.01_60/en_31912201v010201p.pdf)
 
 ## Contributing
 
