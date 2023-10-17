@@ -21,7 +21,11 @@
 		"vscode": {
 			"extensions": [
 				"jtr.vscode-position",
-				"Shopify.ruby-extensions-pack"
+				"Shopify.ruby-extensions-pack",
+				"streetsidesoftware.code-spell-checker",
+				"yzhang.markdown-all-in-one",
+				"GitHub.vscode-pull-request-github",
+				"github.vscode-github-actions"
 			]
 		}
 	}

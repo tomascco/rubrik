@@ -1,0 +1,17 @@
+{
+    "version": "0.2",
+    "ignorePaths": [],
+    "dictionaryDefinitions": [],
+    "dictionaries": [],
+    "words": [
+        "Rubrik",
+        "PKCS",
+        "Tempfile",
+        "rubygems",
+        "ETSI",
+        "codebases",
+        "devcontainer"
+    ],
+    "ignoreWords": [],
+    "import": []
+}
