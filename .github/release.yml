@@ -1,0 +1,18 @@
+changelog:
+  exclude:
+    labels:
+      - dependencies
+    authors:
+  categories:
+    - title: 💥 Breaking Changes
+      labels:
+        - breaking-change
+    - title: ✨ Added
+      labels:
+        - enhancement
+    - title: 🐛 Bug Fixes
+      labels:
+        - bugfix
+    - title: 🛠 Other Changes
+      labels:
+        - "*"
