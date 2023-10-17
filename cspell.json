@@ -10,7 +10,8 @@
         "rubygems",
         "ETSI",
         "codebases",
-        "devcontainer"
+        "devcontainer",
+        "simplecov"
     ],
     "ignoreWords": [],
     "import": []
