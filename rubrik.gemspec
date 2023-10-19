@@ -30,6 +30,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "pdf-reader", "~> 2.10"
   spec.add_runtime_dependency "sorbet-runtime", "~> 0.5"
+  spec.add_runtime_dependency "openssl", ">= 2.2.1"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

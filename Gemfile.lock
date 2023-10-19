@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     rubrik (0.1.1)
+      openssl (>= 2.2.1)
       pdf-reader (~> 2.10)
       sorbet-runtime (~> 0.5)
 
@@ -15,6 +16,7 @@ GEM
     hashery (2.1.2)
     minitest (5.20.0)
     netrc (0.11.0)
+    openssl (3.1.0)
     parallel (1.23.0)
     pdf-reader (2.11.0)
       Ascii85 (~> 1.0)
