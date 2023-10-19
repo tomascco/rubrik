@@ -2,11 +2,9 @@
 # typed: true
 
 require "test_helper"
-require "stringio"
 
 module Rubrik
-  class SignTest < Minitest::Test
-    def test_call
+  class SignTest < Rubrik::Test
       # Arrange
       input_pdf = File.open("test/support/simple.pdf", "rb")
       output_pdf = StringIO.new
