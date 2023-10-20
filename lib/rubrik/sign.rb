@@ -13,6 +13,9 @@ module Rubrik
            certificate_chain: T::Array[OpenSSL::X509::Certificate])
          .void}
     def self.call(input, output, private_key:, public_key:, certificate_chain: [])
+      input.binmode
+      output.reopen(T.unsafe(output), "wb+") if !output.is_a?(StringIO)
+
       document = Rubrik::Document.new(input)
 
       document.add_signature_field

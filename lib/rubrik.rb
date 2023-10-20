@@ -3,7 +3,6 @@
 
 require "sorbet-runtime"
 require "pdf-reader"
-require "irb"
 
 module Rubrik
   class Error < StandardError; end
