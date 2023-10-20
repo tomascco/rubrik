@@ -2,6 +2,7 @@ changelog:
   exclude:
     labels:
       - dependencies
+      - chore
     authors:
   categories:
     - title: 💥 Breaking Changes
