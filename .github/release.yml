@@ -3,7 +3,6 @@ changelog:
     labels:
       - dependencies
       - chore
-    authors:
   categories:
     - title: 💥 Breaking Changes
       labels:
