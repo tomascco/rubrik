@@ -12,19 +12,18 @@ module Rubrik
     SIGNATURE_SIZE = 8_192
 
     sig {returns(T.any(File, Tempfile, StringIO))}
-    attr_reader :io
+    attr_accessor :io
 
     sig {returns(PDF::Reader::ObjectHash)}
-    attr_reader :objects
+    attr_accessor :objects
 
     sig {returns(T::Array[{id: PDF::Reader::Reference, value: T.untyped}])}
-    attr_reader :modified_objects
-
-    sig {returns(PDF::Reader::Reference)}
-    attr_reader :interactive_form_id
+    attr_accessor :modified_objects
 
     sig {returns(Integer)}
-    attr_reader :last_object_id
+    attr_accessor :last_object_id
+
+    private :io=, :objects=, :modified_objects=, :last_object_id=
 
     sig {params(input: T.any(File, Tempfile, StringIO)).void}
     def initialize(input)
@@ -36,9 +35,11 @@ module Rubrik
       fetch_or_create_interactive_form!
     end
 
-    sig {void}
+    sig {returns(PDF::Reader::Reference)}
+    # Returns the reference of the Signature Value dictionary.
     def add_signature_field
-      # create signature value dictionary
+      # To add an signature to the PDF, we need the following structure
+      # Interactive Form -> Signature Field -> Signature Value
       signature_value_id = assign_new_object_id!
       modified_objects << {
         id: signature_value_id,
@@ -63,7 +64,7 @@ module Rubrik
           V: signature_value_id,
           Type: :Annot,
           Subtype: :Widget,
-          Rect: [20, 20, 120, 120],
+          Rect: [0, 0, 0, 0],
           F: 4,
           P: first_page_reference
         }
@@ -75,6 +76,8 @@ module Rubrik
       modified_objects << {id: first_page_reference, value: modified_page}
 
       (interactive_form[:Fields] ||= []) << signature_field_id
+
+      signature_value_id
     end
 
     private
@@ -87,7 +90,7 @@ module Rubrik
     sig {void}
     def fetch_or_create_interactive_form!
       root_ref = objects.trailer[:Root]
-      root = T.let(objects.fetch(root_ref), Hash)
+      root = T.let(objects.fetch(root_ref), T::Hash[Symbol, T.untyped])
 
       if root.key?(:AcroForm)
         form_id = root[:AcroForm]
@@ -111,17 +114,5 @@ module Rubrik
     def assign_new_object_id!
       PDF::Reader::Reference.new(self.last_object_id += 1, 0)
     end
-
-    sig {params(io: T.any(File, Tempfile, StringIO)).returns(T.any(File, Tempfile, StringIO))}
-    attr_writer :io
-
-    sig {params(objects: PDF::Reader::ObjectHash).returns(PDF::Reader::ObjectHash)}
-    attr_writer :objects
-
-    sig {params(modified_objects: T::Array[{id: PDF::Reader::Reference, value: T.untyped}]).returns(T::Array[{id: PDF::Reader::Reference, value: T.untyped}])}
-    attr_writer :modified_objects
-
-    sig {params(last_object_id: Integer).returns(Integer)}
-    attr_writer :last_object_id
   end
 end

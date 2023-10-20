@@ -15,7 +15,7 @@ module Rubrik
           private_key: OpenSSL::PKey::RSA,
           public_key: OpenSSL::X509::Certificate,
           certificate_chain: T::Array[OpenSSL::X509::Certificate])
-        .returns(T.any(File, StringIO, Tempfile))}
+        .void}
 
     FIRST_OFFSET = 0
 
@@ -29,8 +29,7 @@ module Rubrik
       io.gets("<")
 
       first_length = io.pos - 1
-      # we need to double the SIGNATURE_SIZE because the hex encoding double the data size
-      # we also need to sum +2 to account for "<" and ">" of the hex string
+      # We need to sum +2 to account for "<" and ">" of the hex string
       second_offset = first_length + Document::SIGNATURE_SIZE + 2
       second_length = io.size - second_offset
 
