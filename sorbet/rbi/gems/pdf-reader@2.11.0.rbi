@@ -2075,7 +2075,7 @@ class PDF::Reader::ObjectHash
   # Useful for apps that want to extract data from specific pages.
   #
   # source://pdf-reader//lib/pdf/reader/object_hash.rb#468
-  sig { returns(T::Array[PDF::Reader::Reference]) }
+  sig { returns(T::Array[T.any(PDF::Reader::Reference, T::Hash[Symbol, T.untyped])]) }
   def page_references; end
 
   # Returns the value of attribute pdf_version.
