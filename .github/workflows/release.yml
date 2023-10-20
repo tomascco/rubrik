@@ -20,7 +20,7 @@ jobs:
             await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: "${{ github.ref }}",
+              tag_name: "${{ github.ref_name }}",
               name: "${{ github.ref_name }}",
               generate_release_notes: true
             })
