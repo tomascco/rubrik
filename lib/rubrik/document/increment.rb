@@ -23,7 +23,8 @@ module Rubrik
           integer_id = T.let(object[:id].to_i, Integer)
           new_xref << {id: integer_id, offset: io.pos}
 
-          io << "#{integer_id} 0 obj\n" "#{serialize(object[:value])}\n" "endobj\n\n"
+          value = object[:value]
+          io << "#{integer_id} 0 obj\n" "#{SerializeObject[value]}\n" "endobj\n\n"
         end
 
         updated_trailer = document.objects.trailer.dup
@@ -53,52 +54,13 @@ module Rubrik
         end
 
         io << "trailer\n"
-        io << "#{serialize(updated_trailer)}\n"
+        io << "#{SerializeObject[updated_trailer]}\n"
         io << "startxref\n"
         io << "#{new_xref_pos.to_s}\n"
         io << "%%EOF\n"
       end
 
       private
-
-      sig {params(obj: T.untyped).returns(String)}
-      def serialize(obj)
-        case obj
-        when Hash
-          serialized_objs = obj.flatten.map { |e| serialize(e) }
-          "<<#{serialized_objs.join(" ")}>>"
-        when Symbol
-          "/#{obj}"
-        when Array
-          serialized_objs = obj.map { |e| serialize(e) }
-          "[#{serialized_objs.join(" ")}]"
-        when PDF::Reader::Reference
-          "#{obj.id} #{obj.gen} R"
-        when String
-          "(#{obj})"
-        when TrueClass
-          "true"
-        when FalseClass
-          "false"
-        when Document::CONTENTS_PLACEHOLDER
-          "<#{"0" * Document::SIGNATURE_SIZE}>"
-        when Document::BYTE_RANGE_PLACEHOLDER
-          "[0 0000000000 0000000000 0000000000]"
-        when Numeric
-          obj.to_s
-        when NilClass
-          "null"
-        when PDF::Reader::Stream
-          <<~OBJECT.chomp
-            #{serialize(obj.hash)}
-            stream
-            #{obj.data}
-            endstream
-          OBJECT
-        else
-          raise NotImplementedError.new("Don't know how to serialize #{obj}")
-        end
-      end
 
       sig {params(document: Rubrik::Document).returns(Integer)}
       def last_xref_pos(document)
