@@ -35,9 +35,11 @@ module Rubrik
       fetch_or_create_interactive_form!
     end
 
-    sig {void}
+    sig {returns(PDF::Reader::Reference)}
+    # Returns the reference of the Signature Value dictionary.
     def add_signature_field
-      # create signature value dictionary
+      # To add an signature to the PDF, we need the following structure
+      # Interactive Form -> Signature Field -> Signature Value
       signature_value_id = assign_new_object_id!
       modified_objects << {
         id: signature_value_id,
@@ -74,6 +76,8 @@ module Rubrik
       modified_objects << {id: first_page_reference, value: modified_page}
 
       (interactive_form[:Fields] ||= []) << signature_field_id
+
+      signature_value_id
     end
 
     private

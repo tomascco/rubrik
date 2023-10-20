@@ -18,13 +18,10 @@ module Rubrik
 
       document = Rubrik::Document.new(input)
 
-      document.add_signature_field
+      signature_value_ref = document.add_signature_field
 
       Document::Increment.call(document, io: output)
 
-      signature_value = T.must(document.modified_objects.find { _1.dig(:value, :Type) == :Sig })
-
-      signature_value_ref = T.let(signature_value[:id], PDF::Reader::Reference)
       FillSignature.call(output, signature_value_ref:, private_key:, public_key:, certificate_chain:)
     end
   end
