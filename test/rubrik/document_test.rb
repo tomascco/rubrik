@@ -15,7 +15,7 @@ module Rubrik
       # Assert
       assert_equal(input, document.send(:io))
       # FACT: the interactive form was created
-      assert_equal(5, document.last_object_id)
+      assert_equal(6, document.last_object_id)
       assert_kind_of(PDF::Reader::ObjectHash, document.objects)
 
       acro_form = document.modified_objects.find { |obj| obj.dig(:value, :Type) == :Catalog }

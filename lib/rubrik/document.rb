@@ -17,19 +17,25 @@ module Rubrik
     sig {returns(PDF::Reader::ObjectHash)}
     attr_accessor :objects
 
+    sig {returns(Integer)}
+    attr_accessor :first_free_object_id
+
     sig {returns(T::Array[{id: PDF::Reader::Reference, value: T.untyped}])}
     attr_accessor :modified_objects
 
     sig {returns(Integer)}
     attr_accessor :last_object_id
 
-    private :io=, :objects=, :modified_objects=, :last_object_id=
+    private :io=, :objects=, :first_free_object_id=, :modified_objects=, :last_object_id=
 
     sig {params(input: T.any(File, Tempfile, StringIO)).void}
     def initialize(input)
       self.io = input
       self.objects = PDF::Reader::ObjectHash.new(input)
-      self.last_object_id = objects.size
+
+      self.last_object_id = objects.trailer[:Size] - 1
+      self.first_free_object_id = find_first_free_object_id
+
       self.modified_objects = []
 
       fetch_or_create_interactive_form!
@@ -85,6 +91,16 @@ module Rubrik
     sig {returns(T::Hash[Symbol, T.untyped])}
     def interactive_form
       T.must(modified_objects.first).fetch(:value)
+    end
+
+    sig{returns(Integer)}
+    def find_first_free_object_id
+      return 0 if last_object_id == objects.size
+
+      xref = objects.send(:xref).instance_variable_get(:@xref)
+      missing_ids = (1..last_object_id).to_a - xref.keys
+
+      T.must(missing_ids.min)
     end
 
     sig {void}
