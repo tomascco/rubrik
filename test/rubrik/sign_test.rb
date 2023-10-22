@@ -9,14 +9,14 @@ module Rubrik
       # Arrange
       input_pdf = File.open(SupportPDF["with_interactive_form"], "rb")
       output_pdf = StringIO.new
-      certificate = File.open("test/support/demo_cert.pem", "rb")
+      certificate_file = File.open("test/support/demo_cert.pem", "rb")
 
-      private_key = OpenSSL::PKey::RSA.new(certificate, "")
-      certificate.rewind
-      public_key = OpenSSL::X509::Certificate.new(certificate)
+      private_key = OpenSSL::PKey::RSA.new(certificate_file, "")
+      certificate_file.rewind
+      certificate = OpenSSL::X509::Certificate.new(certificate_file)
 
       # Act
-      Sign.call(input_pdf, output_pdf, private_key:, public_key:)
+      Sign.call(input_pdf, output_pdf, private_key:, certificate:)
 
       # Assert
       expected_output = File.open(SupportPDF["with_interactive_form.expected"], "rb")
@@ -35,7 +35,7 @@ module Rubrik
         assert_equal(expected_line, actual_line)
         end
     ensure
-      certificate&.close
+      certificate_file&.close
       output_pdf&.close
       input_pdf&.close
       expected_output&.close
@@ -45,14 +45,14 @@ module Rubrik
       # Arrange
       input_pdf = File.open(SupportPDF["without_interactive_form"], "rb")
       output_pdf = StringIO.new
-      certificate = File.open("test/support/demo_cert.pem", "rb")
+      certificate_file = File.open("test/support/demo_cert.pem", "rb")
 
-      private_key = OpenSSL::PKey::RSA.new(certificate, "")
-      certificate.rewind
-      public_key = OpenSSL::X509::Certificate.new(certificate)
+      private_key = OpenSSL::PKey::RSA.new(certificate_file, "")
+      certificate_file.rewind
+      certificate = OpenSSL::X509::Certificate.new(certificate_file)
 
       # Act
-      Sign.call(input_pdf, output_pdf, private_key:, public_key:)
+      Sign.call(input_pdf, output_pdf, private_key:, certificate:)
 
       # Assert
       expected_output = File.open(SupportPDF["without_interactive_form.expected"], "rb")
@@ -71,7 +71,7 @@ module Rubrik
         assert_equal(expected_line, actual_line)
       end
     ensure
-      certificate&.close
+      certificate_file&.close
       output_pdf&.close
       input_pdf&.close
       expected_output&.close
