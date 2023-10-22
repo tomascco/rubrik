@@ -23,13 +23,13 @@ module Rubrik
 
       expected_output.readlines.zip(output_pdf.readlines).each do |(expected_line, actual_line)|
         # We must erase the signature because it is timestampped
-        if T.must(actual_line).match?("/Type /Sig")
-          T.must(actual_line).sub!(/<[a-f0-9]+>/, "")
-          T.must(expected_line).sub!(/<[a-f0-9]+>/, "")
+        if actual_line&.match?("/Type /Sig")
+          actual_line.sub!(/<[a-f0-9]+>/, "")
+          expected_line.sub!(/<[a-f0-9]+>/, "")
         # The signature field name is also random
-        elsif T.must(actual_line).match?("Signature-[a-f0-9]{4}")
-          T.must(actual_line).sub!(/Signature-[a-f0-9]{4}/, "")
-          T.must(expected_line).sub!(/Signature-[a-f0-9]{4}/, "")
+        elsif actual_line&.match?(/Signature-[a-f0-9]{4}/)
+          actual_line.sub!(/Signature-[a-f0-9]{4}/, "")
+          expected_line.sub!(/Signature-[a-f0-9]{4}/, "")
         end
 
         assert_equal(expected_line, actual_line)
@@ -59,13 +59,13 @@ module Rubrik
 
       expected_output.readlines.zip(output_pdf.readlines).each do |(expected_line, actual_line)|
         # We can't verify the signature because it changes on every run
-        if T.must(actual_line).match?("/Type /Sig")
-          T.must(actual_line).sub!(/<[a-f0-9]+>/, "")
-          T.must(expected_line).sub!(/<[a-f0-9]+>/, "")
+        if actual_line&.match?("/Type /Sig")
+          actual_line.sub!(/<[a-f0-9]+>/, "")
+          expected_line.sub!(/<[a-f0-9]+>/, "")
         # The signature field name is also random
-        elsif T.must(actual_line).match?("Signature-[a-f0-9]{4}")
-          T.must(actual_line).sub!(/Signature-[a-f0-9]{4}/, "")
-          T.must(expected_line).sub!(/Signature-[a-f0-9]{4}/, "")
+        elsif actual_line&.match?(/Signature-[a-f0-9]{4}/)
+          actual_line.sub!(/Signature-[a-f0-9]{4}/, "")
+          expected_line.sub!(/Signature-[a-f0-9]{4}/, "")
         end
 
         assert_equal(expected_line, actual_line)
