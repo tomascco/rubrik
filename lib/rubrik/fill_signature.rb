@@ -11,13 +11,13 @@ module Rubrik
           io: T.any(File, StringIO, Tempfile),
           signature_value_ref: PDF::Reader::Reference,
           private_key: OpenSSL::PKey::RSA,
-          public_key: OpenSSL::X509::Certificate,
+          certificate: OpenSSL::X509::Certificate,
           certificate_chain: T::Array[OpenSSL::X509::Certificate])
         .void}
 
     FIRST_OFFSET = 0
 
-    def call(io, signature_value_ref:, private_key:, public_key:, certificate_chain: [])
+    def call(io, signature_value_ref:, private_key:, certificate:, certificate_chain: [])
       io.rewind
 
       signature_value_offset = PDF::Reader::XRef.new(io)[signature_value_ref]
@@ -53,7 +53,7 @@ module Rubrik
       io.pos = second_offset
       data_to_sign += T.must(io.read(second_length))
 
-      signature = PKCS7Signature.call(data_to_sign, private_key:, certificate: public_key)
+      signature = PKCS7Signature.call(data_to_sign, private_key:, certificate:)
       hex_signature = T.let(signature, String).unpack1("H*")
 
       padded_contents_field = "<#{hex_signature.ljust(Document::SIGNATURE_SIZE, "0")}>"

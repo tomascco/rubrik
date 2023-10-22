@@ -52,14 +52,14 @@ input_pdf = File.open("example.pdf", "rb")
 output_pdf = File.open("signed_example.pdf", "wb+") # needs read permission
 
 # Load Certificate(s)
-certificate = File.open("example_cert.pem", "rb")
-private_key = OpenSSL::PKey::RSA.new(certificate, "")
-certificate.rewind
-public_key = OpenSSL::X509::Certificate.new(certificate)
-certificate.close
+certificate_file = File.open("example_cert.pem", "rb")
+private_key = OpenSSL::PKey::RSA.new(certificate_file, "")
+certificate_file.rewind
+certificate = OpenSSL::X509::Certificate.new(certificate_file)
+certificate_file.close
 
 # Will write the signed document to `output_pdf`
-Rubrik::Sign.call(input_pdf, output_pdf, private_key:, public_key:, certificate_chain: [])
+Rubrik::Sign.call(input_pdf, output_pdf, private_key:, certificate:, certificate_chain: [])
 
 # Don't forget to close the files
 input_pdf.close
