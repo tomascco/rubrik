@@ -1,8 +1,6 @@
 # typed: true
 # frozen_string_literal: true
 
-require "openssl"
-
 module Rubrik
   module FillSignature
     extend T::Sig
@@ -55,8 +53,7 @@ module Rubrik
       io.pos = second_offset
       data_to_sign += T.must(io.read(second_length))
 
-      signature = OpenSSL::PKCS7.sign(public_key, private_key, data_to_sign, certificate_chain,
-                                      OpenSSL::PKCS7::DETACHED | OpenSSL::PKCS7::BINARY).to_der
+      signature = PKCS7Signature.call(data_to_sign, private_key:, certificate: public_key)
       hex_signature = T.let(signature, String).unpack1("H*")
 
       padded_contents_field = "<#{hex_signature.ljust(Document::SIGNATURE_SIZE, "0")}>"
