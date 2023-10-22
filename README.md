@@ -22,6 +22,7 @@ This gem is under development and may be subjected to breaking changes.
 
 ### PDF Features
 - [x] Modify PDFs with incremental updates (doesn't modify the documents, only append signature appearance)
+- [ ] Encryption Support
 - [ ] Signature appearance (stamp)
 - [ ] External (offline) signatures
 
