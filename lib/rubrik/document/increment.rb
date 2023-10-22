@@ -46,7 +46,7 @@ module Rubrik
           io << "#{starting_id} #{length}\n"
 
           if starting_id.zero?
-            io << "0000000000 65535 f \n"
+            io << "#{format("%010d", document.first_free_object_id)} 65535 f \n"
             subsection.shift
           end
 
