@@ -46,11 +46,11 @@ module Rubrik
           io << "#{starting_id} #{length}\n"
 
           if starting_id.zero?
-            io << "0000000000 65535 f\n"
+            io << "0000000000 65535 f \n"
             subsection.shift
           end
 
-          subsection.each { |entry| io << "#{format("%010d", entry[:offset])} 00000 n\n" }
+          subsection.each { |entry| io << "#{format("%010d", entry[:offset])} 00000 n \n" }
         end
 
         io << "trailer\n"
