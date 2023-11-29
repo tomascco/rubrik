@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rubrik (1.0.0)
+    rubrik (1.0.1)
       openssl (>= 2.2.1)
       pdf-reader (~> 2.10)
       sorbet-runtime (~> 0.5)
