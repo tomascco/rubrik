@@ -4,14 +4,15 @@
     "dictionaryDefinitions": [],
     "dictionaries": [],
     "words": [
-        "Rubrik",
-        "PKCS",
-        "Tempfile",
-        "rubygems",
-        "ETSI",
+        "Annots",
         "codebases",
         "devcontainer",
-        "simplecov"
+        "ETSI",
+        "PKCS",
+        "Rubrik",
+        "rubygems",
+        "simplecov",
+        "Tempfile"
     ],
     "ignoreWords": [],
     "import": []

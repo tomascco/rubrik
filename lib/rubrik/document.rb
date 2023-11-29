@@ -76,10 +76,20 @@ module Rubrik
         }
       }
 
-      modified_page = objects.fetch(first_page_reference).dup
-      (modified_page[:Annots] ||= []) << signature_field_id
+      first_page = objects.fetch(first_page_reference)
+      annots = first_page[:Annots]
 
-      modified_objects << {id: first_page_reference, value: modified_page}
+      if annots.is_a?(PDF::Reader::Reference)
+        new_annots = objects.fetch(annots).dup
+        new_annots << signature_field_id
+
+        modified_objects << {id: annots, value: new_annots}
+      else
+        new_first_page = first_page.dup
+        (new_first_page[:Annots] ||= []) << signature_field_id
+
+        modified_objects << {id: first_page_reference, value: new_first_page}
+      end
 
       (interactive_form[:Fields] ||= []) << signature_field_id
 
