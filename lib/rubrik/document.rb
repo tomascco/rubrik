@@ -118,11 +118,22 @@ module Rubrik
       root_ref = objects.trailer[:Root]
       root = T.let(objects.fetch(root_ref), T::Hash[Symbol, T.untyped])
 
-      if root.key?(:AcroForm)
+      interactive_form_value = root[:AcroForm]
+      case interactive_form_value
+      when PDF::Reader::Reference
         form_id = root[:AcroForm]
 
         modified_objects << {id: form_id, value: objects.fetch(form_id).dup}
-      else
+      when Hash
+        interactive_form_id = assign_new_object_id!
+
+        modified_objects << {id: interactive_form_id, value: interactive_form_value.dup}
+
+        new_root = root.dup
+        new_root[:AcroForm] = interactive_form_id
+
+        modified_objects << {id: root_ref, value: new_root}
+      when NilClass
         interactive_form_id = assign_new_object_id!
         modified_objects << {id: interactive_form_id, value: {Fields: []}}
 
@@ -131,6 +142,10 @@ module Rubrik
         updated_root[:AcroForm] = interactive_form_id
 
         modified_objects << {id: root_ref, value: updated_root}
+      else
+        raise Error.new(
+          "Expected dictionary, reference or nil but got " \
+          "#{interactive_form_value.class} on AcroForm entry.")
       end
 
       interactive_form[:SigFlags] = 3 # dont modify, append only

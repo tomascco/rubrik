@@ -48,6 +48,41 @@ module Rubrik
       input&.close
     end
 
+    def test_initialize_document_with_unexpected_interactive_form_input
+      # Arrange
+      input = File.open(SupportPDF["unexpected_value_interactive_form"], "rb")
+
+      # Act + Assert
+      assert_raises("Expected dictionary, reference or nil but got Array on AcroForm entry.") do
+        Document.new(input)
+      end
+    ensure
+      input&.close
+    end
+
+    def test_initialize_document_with_inline_interactive_form
+      # Arrange
+      input = File.open(SupportPDF["inline_interactive_form"], "rb")
+
+      # Act
+      document = Document.new(input)
+
+      # Assert
+      assert_equal(input, document.send(:io))
+      assert_equal(5, document.last_object_id)
+      assert_kind_of(PDF::Reader::ObjectHash, document.objects)
+
+      root_ref = PDF::Reader::Reference.new(1, 0)
+      assert_pattern do
+        document.modified_objects => [
+          {id: PDF::Reader::Reference, value: {Fields: [], SigFlags: 3, NeedAppearances: true}},
+          {id: ^root_ref, value: Hash}
+        ]
+      end
+    ensure
+      input&.close
+    end
+
     def test_add_signature_field
       # Arrange
       input = File.open(SupportPDF["with_interactive_form"], "rb")
