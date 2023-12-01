@@ -17,11 +17,23 @@ class Rubrik::Document
     end
 
     def test_symbol_serialization
-      # Act
-      result = SerializeObject[:Test]
-
-      # Assert
-      assert_equal("/Test", result)
+      # Act + Assert
+      [
+        ["/Name1", :"Name1"],
+        ["/ASomewhatLongerName", :"ASomewhatLongerName"],
+        ["/A;Name_With-Various***Characters?", :"A;Name_With-Various***Characters?"],
+        ["/1.2", :"1.2"],
+        ["/$$", :"$$"],
+        ["/@pattern", :"@pattern"],
+        ["/.notdef", :".notdef"],
+        ["/Lime#20Green", :"Lime Green"],
+        ["/paired#28#29parentheses", :"paired()parentheses"],
+        ["/The_Key_of_F#23_Minor", :"The_Key_of_F#_Minor"],
+        ["/AB", :"AB"],
+        ["/H#c3#b6#c3#9fgang", :"Hößgang"],
+      ].each do |(expected, subject)|
+        assert_equal(expected, SerializeObject[subject])
+      end
     end
 
     def test_array_serialization
