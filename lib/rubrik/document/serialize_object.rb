@@ -15,7 +15,7 @@ module Rubrik
           serialized_objs = obj.flatten.map { |e| SerializeObject[e] }
           "<<#{serialized_objs.join(" ")}>>"
         when Symbol
-          "/#{obj}"
+          serialize_symbol(obj)
         when Array
           serialized_objs = obj.map { |e| SerializeObject[e] }
           "[#{serialized_objs.join(" ")}]"
@@ -51,7 +51,7 @@ module Rubrik
 
       private
 
-      ESCAPE_MAP = {
+      STRING_ESCAPE_MAP = {
         "\n" => "\\\n",
         "\r" => "\\\r",
         "\t" => "\\\t",
@@ -64,7 +64,26 @@ module Rubrik
 
       sig {params(string: String).returns(String)}
       def serialize_string(string)
-        "(#{string.gsub(/[\n\r\t\b\f\\()]/n, ESCAPE_MAP)})"
+        "(#{string.gsub(/[\n\r\t\b\f\\()]/n, STRING_ESCAPE_MAP)})"
+      end
+
+      DELIMITERS = "()<>[]{}/%".bytes.freeze
+      REGULAR_CHARACTERS =
+        "!\"\#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~".bytes.freeze
+
+
+      NAME_ESCAPE_CHARACTERS = (0..255).to_a - REGULAR_CHARACTERS + DELIMITERS + "#".bytes
+      NAME_ESCAPE_CHARACTERS.freeze
+
+      NAME_ESCAPE_MAP = NAME_ESCAPE_CHARACTERS.each_with_object({}) do |char, escape_map|
+        escape_map[char.chr] = "##{char.to_s(16).rjust(2, "0")}"
+      end.freeze
+
+      NAME_ESCAPE_REGEX = /[#{Regexp.escape(NAME_ESCAPE_CHARACTERS.map(&:chr).join)}]/
+
+      sig {params(symbol: Symbol).returns(String)}
+      def serialize_symbol(symbol)
+        "/#{symbol.to_s.b.gsub(NAME_ESCAPE_REGEX, NAME_ESCAPE_MAP)}"
       end
     end
   end
