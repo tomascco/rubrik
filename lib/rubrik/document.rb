@@ -91,7 +91,15 @@ module Rubrik
         modified_objects << {id: first_page_reference, value: new_first_page}
       end
 
-      (interactive_form[:Fields] ||= []) << signature_field_id
+      fields_entry = interactive_form[:Fields]
+      if fields_entry.is_a?(PDF::Reader::Reference)
+        new_fields_array = objects.fetch(fields_entry).dup
+        new_fields_array << signature_field_id
+
+        modified_objects << {id: fields_entry, value: new_fields_array}
+      else
+        (interactive_form[:Fields] ||= []) << signature_field_id
+      end
 
       signature_value_id
     end

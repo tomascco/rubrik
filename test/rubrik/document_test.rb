@@ -189,5 +189,27 @@ module Rubrik
     ensure
       input&.close
     end
+
+    def test_add_signature_field_with_indirect_fields
+      # Arrange
+      input = File.open(SupportPDF["indirect_fields"], "rb")
+      document = Document.new(input)
+      initial_number_of_objects = document.modified_objects.size
+
+      # Act
+      result = document.add_signature_field
+
+      # Assert
+      number_of_added_objects = document.modified_objects.size - initial_number_of_objects
+      assert_equal(4, number_of_added_objects)
+
+      assert_pattern do
+        document.modified_objects => [{id: PDF::Reader::Reference, value: {Fields: fields_ref}}, *]
+        document.modified_objects => [*, {id: ^fields_ref, value: [signature_field_ref]}]
+        document.modified_objects => [*, {id: ^signature_field_ref, value: {FT: :Sig}}, *]
+      end
+    ensure
+      input&.close
+    end
   end
 end
