@@ -22,7 +22,7 @@ module Rubrik
         when PDF::Reader::Reference
           "#{obj.id} #{obj.gen} R"
         when String
-          "(#{obj})"
+          serialize_string(obj)
         when TrueClass
           "true"
         when FalseClass
@@ -48,6 +48,24 @@ module Rubrik
       end
 
       alias call []
+
+      private
+
+      ESCAPE_MAP = {
+        "\n" => "\\\n",
+        "\r" => "\\\r",
+        "\t" => "\\\t",
+        "\b" => "\\\b",
+        "\f" => "\\\f",
+        "\\" => "\\\\",
+        "(" => "\\(",
+        ")" => "\\)"
+      }.freeze
+
+      sig {params(string: String).returns(String)}
+      def serialize_string(string)
+        "(#{string.gsub(/[\n\r\t\b\f\\()]/n, ESCAPE_MAP)})"
+      end
     end
   end
 end
