@@ -44,11 +44,17 @@ class Rubrik::Document
     end
 
     def test_string_serialization
-      # Act
-      result = SerializeObject["Test"]
-
-      # Assert
-      assert_equal("(Test)", result)
+      # Act + Assert
+      [
+        ["(Test)", "Test"],
+        ["(Test\\))", "Test)"],
+        ["(Test\\\n)", "Test\n"],
+        ["(hello \\\f\\\b hi)", "hello \f\b hi"],
+        ["(This is \\(\\)n inverted backslash \\\\)", "This is ()n inverted backslash \\"],
+        ["(Really \\(\\) \\\r\\\n complicated\\\ttest)", "Really () \r\n complicated\ttest"]
+      ].each do |(expected, subject)|
+        assert_equal(expected, SerializeObject[subject])
+      end
     end
 
     def test_booleans_serialization
